@@ -56,19 +56,27 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public Auth & Docs
+                        // Public Auth, Docs, Console & Actuator
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
 
-                        // Publicly viewable Issue Feed, Map, Categories & Departments
-                        .requestMatchers(HttpMethod.GET, "/api/v1/issues/public/**").permitAll()
+                        // Authenticated issue subpaths
+                        .requestMatchers("/api/v1/issues/my-reports").authenticated()
+
+                        // Publicly viewable Issue Feed, Details, Tracking, Map, Categories & Departments
+                        .requestMatchers(HttpMethod.GET, "/api/v1/issues/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/departments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/confirmations/issues/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/ratings/issues/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/assignments/issues/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/analytics/public").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/uploads/**").permitAll()
 
